@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>هاتف كافح المكافح — Kafah Al-Mukafah OS</title>
+<style>
+  :root {
+    --bg-dark: #06090f;
+    --panel: rgba(16, 23, 36, 0.88);
+    --panel-2: rgba(24, 34, 52, 0.92);
+    --border: rgba(255, 255, 255, 0.12);
+    --text: #f3f6fb;
+    --muted: #9aa7bd;
+    --accent: #38bdf8;
+    --accent-2: #22c55e;
+    --gold: #f59e0b;
+    --danger: #ef4444;
+    --kick: #53fc18;
+    --wa: #25d366;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: radial-gradient(circle at top, #132038 0%, #06090f 65%);
+    color: var(--text);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100dvh;
+    padding: 14px;
+  }
+
+  .device-frame {
+    width: 100%;
+    max-width: 410px;
+    height: min(840px, calc(100dvh - 28px));
+    min-height: 620px;
+    background: #090d16;
+    border-radius: 36px;
+    border: 2px solid rgba(255,255,255,0.16);
+    box-shadow: 0 25px 70px rgba(0,0,0,0.75), inset 0 0 0 1px rgba(255,255,255,0.05);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-bar {
+    height: 36px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(5, 8, 15, 0.72);
+    backdrop-filter: blur(12px);
+    z-index: 30;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .screen {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wallpaper {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .wallpaper-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(6,10,18,0.38) 0%, rgba(6,10,18,0.25) 45%, rgba(6,10,18,0.68) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .lock-screen {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 18px 20px;
+    overflow-y: auto;
+  }
+
+  .lock-top {
+    text-align: center;
+  }
+
+  .lock-clock {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.05;
+    text-shadow: 0 4px 18px rgba(0,0,0,0.65);
+  }
+
+  .lock-date {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #dbeafe;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  }
+
+  .lock-owner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(255,255,255,0.16);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pin-box {
+    background: rgba(11, 17, 29, 0.86);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+
+  .pin-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 8px;
+  }
+
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .pin-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: transparent;
+    transition: all 0.15s ease;
+  }
+
+  .pin-dot.filled {
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+  }
+
+  .pin-msg {
+    min-height: 18px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fda4af;
+    margin-bottom: 8px;
+  }
+
+  .pin-msg.ok {
+    color: #86efac;
+  }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .key-btn {
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+
+  .key-btn:active {
+    transform: scale(0.95);
+    background: rgba(56, 189, 248, 0.25);
+  }
+
+  .key-btn.sub {
+    font-size: 12px;
+    font-weight: 700;
+    color: #cbd5e1;
+  }
+
+  .unlock-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .bio-btn {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(34, 197, 94, 0.45);
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.28), rgba(16, 185, 129, 0.15));
+    color: #ecfdf5;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .bio-btn.scanning {
+    animation: pulseGlow 0.85s infinite alternate;
+    border-color: var(--kick);
+  }
+
+  @keyframes pulseGlow {
+    from { box-shadow: 0 0 0 rgba(83, 252, 24, 0.1); }
+    to { box-shadow: 0 0 18px rgba(83, 252, 24, 0.55); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  .shake {
+    animation: shake 0.35s ease;
+  }
+
+  .home-screen {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 14px 14px 12px;
+    overflow: hidden;
+  }
+
+  .wallet-banner {
+    background: rgba(13, 20, 34, 0.84);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 20px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .wallet-banner-label {
+    font-size: 11px;
+    color: #fde68a;
+    font-weight: 700;
+  }
+
+  .wallet-banner-amount {
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+    direction: ltr;
+    text-align: right;
+  }
+
+  .wallet-chip {
+    background: rgba(245, 158, 11, 0.18);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fcd34d;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px 8px;
+    margin-top: 12px;
+    align-content: start;
+    overflow-y: auto;
+    padding-bottom: 6px;
+  }
+
+  .app-icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .app-icon-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.42);
+    border: 1px solid rgba(255,255,255,0.18);
+    position: relative;
+    transition: transform 0.12s ease;
+  }
+
+  .app-icon-item:active .app-icon-box {
+    transform: scale(0.92);
+  }
+
+  .app-badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #090d16;
+  }
+
+  .app-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    color: #f8fafc;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.85);
+    line-height: 1.2;
+  }
+
+  .dock {
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 24px;
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .app-view {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    background: #0b111d;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app-view.active {
+    display: flex;
+  }
+
+  .app-header {
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.96);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .app-title {
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .back-btn {
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border-radius: 12px;
+    padding: 6px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .app-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    color: #fff;
+    background: var(--accent);
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-green { background: #16a34a; }
+  .btn-gold { background: #d97706; }
+  .btn-red { background: #dc2626; }
+  .btn-ghost {
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  .input, .textarea, .select {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(6, 10, 18, 0.82);
+    color: #fff;
+    padding: 9px 11px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+  }
+
+  .input:focus, .textarea:focus, .select:focus {
+    border-color: var(--accent);
+  }
+
+  .chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: #e2e8f0;
+    cursor: pointer;
+  }
+
+  .tabs-bar {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .tab-pill {
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: #cbd5e1;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .tab-pill.active {
+    background: var(--accent);
+    color: #05111d;
+    border-color: var(--accent);
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.25);
+  }
+
+  .chat-box {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(5, 8, 15, 0.55);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    min-height: 180px;
+  }
+
+  .msg {
+    max-width: 82%;
+    padding: 8px 11px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  .msg.out {
+    align-self: flex-start;
+    background: rgba(37, 211, 102, 0.22);
+    border: 1px solid rgba(37, 211, 102, 0.4);
+  }
+
+  .msg.in {
+    align-self: flex-end;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+    direction: ltr;
+    text-align: left;
+  }
+
+  .dialpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .dial-btn {
+    height: 48px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .call-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 45;
+    background: linear-gradient(180deg, #0b1628 0%, #060911 100%);
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 16px;
+  }
+
+  .call-overlay.active {
+    display: flex;
+  }
+
+  .toast {
+    position: absolute;
+    bottom: 68px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: rgba(15, 23, 42, 0.96);
+    color: #fff;
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 60;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.22s ease;
+    white-space: nowrap;
+    max-width: 92%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .nav-bar-bottom {
+    height: 30px;
+    background: #06090f;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 35;
+    flex-shrink: 0;
+  }
+
+  .nav-pill-btn {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 4px 12px;
+  }
+</style>
+</head>
+<body>
+<div class="device-frame" id="deviceFrame">
+  <div class="status-bar">
+    <span id="statusClock">20:59</span>
+    <span>كافح المكافح • 5G</span>
+    <span id="statusWallet">$999,000.00</span>
+  </div>
+
+  <div class="screen" id="mainScreen">
+    <div class="wallpaper" id="wallpaperEl"></div>
+    <div class="wallpaper-overlay"></div>
+
+    <!-- Lock Screen -->
+    <div class="lock-screen" id="lockScreen">
+      <div class="lock-top">
+        <div class="lock-clock" id="lockClock">20:59</div>
+        <div class="lock-date" id="lockDate">الاثنين، 23 نوفمبر 2026</div>
+        <div class="lock-owner-badge">
+          <span>📱</span>
+          <span>هاتف كافح المكافح • 7777777777</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="pin-box" id="pinBox">
+          <div class="pin-title">أدخل رمز القفل المكوّن من 3 أرقام (الافتراضي: 777)</div>
+          <div class="pin-dots">
+            <span class="pin-dot" id="dot0"></span>
+            <span class="pin-dot" id="dot1"></span>
+            <span class="pin-dot" id="dot2"></span>
+          </div>
+          <div class="pin-msg" id="pinMsg"></div>
+          <div class="keypad" id="lockKeypad">
+            <button type="button" class="key-btn" data-pin="1">1</button>
+            <button type="button" class="key-btn" data-pin="2">2</button>
+            <button type="button" class="key-btn" data-pin="3">3</button>
+            <button type="button" class="key-btn" data-pin="4">4</button>
+            <button type="button" class="key-btn" data-pin="5">5</button>
+            <button type="button" class="key-btn" data-pin="6">6</button>
+            <button type="button" class="key-btn" data-pin="7">7</button>
+            <button type="button" class="key-btn" data-pin="8">8</button>
+            <button type="button" class="key-btn" data-pin="9">9</button>
+            <button type="button" class="key-btn sub" id="pinClearBtn">مسح</button>
+            <button type="button" class="key-btn" data-pin="0">0</button>
+            <button type="button" class="key-btn sub" id="pinBackBtn">⌫</button>
+          </div>
+        </div>
+
+        <div class="unlock-actions">
+          <button type="button" class="bio-btn" id="bioUnlockBtn">
+            <span>👆</span>
+            <span id="bioBtnText">فتح بالبصمة (بصمة كافح)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Home Screen -->
+    <div class="home-screen" id="homeScreen" style="display:none;">
+      <div class="wallet-banner" id="homeWalletBanner">
+        <div>
+          <div class="wallet-banner-label">محفظة كافح المكافح • رصيد جاهز للشراء</div>
+          <div class="wallet-banner-amount" id="homeWalletBalance">$999,000.00</div>
+        </div>
+        <div class="wallet-chip">💳 المحفظة والمتجر</div>
+      </div>
+
+      <div class="apps-grid" id="appsGrid">
+        <div class="app-icon-item" data-open-app="wallet">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#f59e0b,#b45309);">💰</div>
+          <div class="app-label">المحفظة</div>
+        </div>
+        <div class="app-icon-item" data-open-app="store">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#0ea5e9,#1d4ed8);">🛒</div>
+          <div class="app-label">المتجر</div>
+        </div>
+        <div class="app-icon-item" data-open-app="inventory">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">🎒</div>
+          <div class="app-label">مقتنياتي</div>
+        </div>
+        <div class="app-icon-item" data-open-app="whatsapp">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#22c55e,#15803d);">💬</div>
+          <div class="app-label">الواتساب</div>
+        </div>
+        <div class="app-icon-item" data-open-app="kick">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#111827,#064e3b);color:#53fc18;">K</div>
+          <div class="app-label">الكيك</div>
+        </div>
+        <div class="app-icon-item" data-open-app="contacts">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#ec4899,#be185d);">👥</div>
+          <div class="app-label">جهات الاتصال</div>
+        </div>
+        <div class="app-icon-item" data-open-app="phone">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#10b981,#047857);">📞
+            <span class="app-badge" id="missedBadge" style="display:none;">0</span>
+          </div>
+          <div class="app-label">الهاتف</div>
+        </div>
+        <div class="app-icon-item" data-open-app="photos">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#f97316,#c2410c);">🖼️</div>
+          <div class="app-label">الصور والخلفيات</div>
+        </div>
+        <div class="app-icon-item" data-open-app="notes">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#eab308,#a16207);">📝</div>
+          <div class="app-label">الملاحظات</div>
+        </div>
+        <div class="app-icon-item" data-open-app="calc">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#475569,#1e293b);">🧮</div>
+          <div class="app-label">الحاسبة</div>
+        </div>
+        <div class="app-icon-item" data-open-app="settings">
+          <div class="app-icon-box" style="background:linear-gradient(135deg,#6366f1,#4338ca);">⚙️</div>
+          <div class="app-label">الإعدادات</div>
+        </div>
+      </div>
+
+      <div class="dock">
+        <div class="app-icon-item" data-open-app="phone">
+          <div class="app-icon-box" style="width:46px;height:46px;font-size:20px;background:linear-gradient(135deg,#10b981,#047857);">📞</div>
+          <div class="app-label">الهاتف</div>
+        </div>
+        <div class="app-icon-item" data-open-app="whatsapp">
+          <div class="app-icon-box" style="width:46px;height:46px;font-size:20px;background:linear-gradient(135deg,#22c55e,#15803d);">💬</div>
+          <div class="app-label">واتساب</div>
+        </div>
+        <div class="app-icon-item" data-open-app="store">
+          <div class="app-icon-box" style="width:46px;height:46px;font-size:20px;background:linear-gradient(135deg,#0ea5e9,#1d4ed8);">🛒</div>
+          <div class="app-label">المتجر</div>
+        </div>
+        <div class="app-icon-item" data-open-app="kick">
+          <div class="app-icon-box" style="width:46px;height:46px;font-size:20px;background:linear-gradient(135deg,#111827,#064e3b);color:#53fc18;">K</div>
+          <div class="app-label">كيك</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Views Container -->
+    <div class="app-view" id="app-wallet">
+      <div class="app-header">
+        <div class="app-title">💰 محفظة كافح المكافح</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="walletBody"></div>
+    </div>
+
+    <div class="app-view" id="app-store">
+      <div class="app-header">
+        <div class="app-title">🛒 متجر كافح</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="storeBody"></div>
+    </div>
+
+    <div class="app-view" id="app-inventory">
+      <div class="app-header">
+        <div class="app-title">🎒 مقتنياتي</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="inventoryBody"></div>
+    </div>
+
+    <div class="app-view" id="app-whatsapp">
+      <div class="app-header">
+        <div class="app-title">💬 واتساب كافح</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="whatsappBody"></div>
+    </div>
+
+    <div class="app-view" id="app-kick">
+      <div class="app-header">
+        <div class="app-title" style="color:var(--kick);">K قناة Drb7h • كيك</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="kickBody"></div>
+    </div>
+
+    <div class="app-view" id="app-contacts">
+      <div class="app-header">
+        <div class="app-title">👥 جهات الاتصال</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="contactsBody"></div>
+    </div>
+
+    <div class="app-view" id="app-phone">
+      <div class="app-header">
+        <div class="app-title">📞 الهاتف والمكالمات</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="phoneBody"></div>
+    </div>
+
+    <div class="app-view" id="app-photos">
+      <div class="app-header">
+        <div class="app-title">🖼️ الصور والخلفيات</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="photosBody"></div>
+    </div>
+
+    <div class="app-view" id="app-notes">
+      <div class="app-header">
+        <div class="app-title">📝 ملاحظات كافح</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="notesBody"></div>
+    </div>
+
+    <div class="app-view" id="app-calc">
+      <div class="app-header">
+        <div class="app-title">🧮 الحاسبة</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="calcBody"></div>
+    </div>
+
+    <div class="app-view" id="app-settings">
+      <div class="app-header">
+        <div class="app-title">⚙️ إعدادات الهاتف</div>
+        <button type="button" class="back-btn" data-close-app>الرئيسية</button>
+      </div>
+      <div class="app-body" id="settingsBody"></div>
+    </div>
+
+    <!-- Active / Incoming Call Overlay -->
+    <div class="call-overlay" id="callOverlay"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toastEl"></div>
+  </div>
+
+  <div class="nav-bar-bottom">
+    <button type="button" class="nav-pill-btn" id="navBackBtn">◀ رجوع</button>
+    <button type="button" class="nav-pill-btn" id="navHomeBtn">⌂ الرئيسية</button>
+    <button type="button" class="nav-pill-btn" id="navLockBtn">🔒 قفل</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const STORAGE_KEY = "kafeh_phone_v1";
+
+  const DEFAULT_WALLPAPERS = [
+    {
+      id: "wp_night_sky",
+      name: "سماء الليل الكلاسيكية",
+      url: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1000"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#091326"/><stop offset="55%" stop-color="#15284b"/><stop offset="100%" stop-color="#060911"/></linearGradient></defs><rect width="600" height="1000" fill="url(#g)"/><circle cx="460" cy="170" r="95" fill="#38bdf8" opacity="0.14"/><circle cx="140" cy="420" r="130" fill="#f59e0b" opacity="0.10"/><text x="300" y="510" text-anchor="middle" fill="#ffffff" fill-opacity="0.12" font-size="44" font-family="Arial" font-weight="bold">KAFAH OS</text></svg>`)
+    },
+    {
+      id: "wp_gtr_neon",
+      name: "أضواء الطريق السريع",
+      url: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1000"><defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#08121e"/><stop offset="50%" stop-color="#0f2942"/><stop offset="100%" stop-color="#1e1b4b"/></linearGradient></defs><rect width="600" height="1000" fill="url(#g2)"/><path d="M0 720 Q300 610 600 740 L600 1000 L0 1000 Z" fill="#0b1120"/><line x1="0" y1="740" x2="600" y2="700" stroke="#38bdf8" stroke-width="3" opacity="0.45"/><line x1="0" y1="790" x2="600" y2="760" stroke="#f59e0b" stroke-width="2" opacity="0.35"/></svg>`)
+    },
+    {
+      id: "wp_emerald",
+      name: "زمردي قيادي",
+      url: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1000"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#052e16"/><stop offset="55%" stop-color="#064e3b"/><stop offset="100%" stop-color="#090d16"/></linearGradient></defs><rect width="600" height="1000" fill="url(#g3)"/><circle cx="300" cy="320" r="180" fill="#22c55e" opacity="0.12"/></svg>`)
+    }
+  ];
+
+  const STORE_ITEMS = [
+    { id: "gtr", name: "سيارة جي تي آر (GT-R)", price: 145000, emoji: "🏎️", desc: "أداء رياضي عالي وسرعة فائقة لأسطول كافح." },
+    { id: "caravan", name: "سيارة فورد أمريكية كرفان", price: 92000, emoji: "🚐", desc: "رحلات طويلة ومريحة بتجهيزات متكاملة." },
+    { id: "m4", name: "سلاح أم فور (M4 Rifle)", price: 18500, emoji: "🔫", desc: "نسخة استعراضية/تكتيكية ضمن مقتنيات كافح." },
+    { id: "clothes", name: "ملابس كافح الفاخرة", price: 6500, emoji: "🧥", desc: "تشكيلة ملابس فخمة بتصميم قيادي مميز." },
+    { id: "watch", name: "ساعة كافح الذهبية", price: 24000, emoji: "⌚", desc: "ساعة فاخرة بإطار ذهبي ولمسة كلاسيكية." }
+  ];
+
+  const DEFAULT_CONTACTS = [
+    { id: "me", name: "كافح المكافح (رقمي)", phone: "7777777777", role: "مالك الهاتف", color: "#f59e0b", isOwner: true, aiPersona: "أنا كافح المكافح، صاحب هذا الخط الرئيسي." },
+    { id: "eqab", name: "عقاب المخطوط", phone: "6431494949", role: "مساعد قيادي ذكي", color: "#dc2626", isOwner: false, aiPersona: "عقاب المخطوط يتحدث معك بنبرة قيادية حازمة ومباشرة." },
+    { id: "mathbo", name: "ماثبو", phone: "5849496731", role: "جهة اتصال", color: "#2563eb", isOwner: false, aiPersona: "ماثبو معك على الخط، أهلاً يا كافح." },
+    { id: "anwar", name: "انور", phone: "6454424576", role: "جهة اتصال", color: "#059669", isOwner: false, aiPersona: "أنور معك يا كافح، كيف أقدر أساعدك؟" }
+  ];
+
+  function createDefaultState() {
+    const nowTime = "20:59";
+    return {
+      locked: true,
+      pinCode: "777",
+      pinEnabled: true,
+      fingerprintEnabled: true,
+      walletBalance: 999000,
+      transactions: [
+        { id: "tx_init", type: "deposit", title: "رصيد افتتاحي لمحفظة كافح", amount: 999000, time: nowTime }
+      ],
+      inventory: {
+        gtr: 1,
+        caravan: 1,
+        m4: 1,
+        clothes: 1,
+        watch: 1
+      },
+      customWallpaper: null,
+      selectedWallpaperId: "wp_night_sky",
+      galleryPhotos: DEFAULT_WALLPAPERS.map(w => ({ id: w.id, name: w.name, url: w.url })),
+      contacts: JSON.parse(JSON.stringify(DEFAULT_CONTACTS)),
+      chats: {
+        eqab: [
+          { sender: "in", text: "أهلاً بك يا كافح المكافح. عقاب المخطوط جاهز لأي أمر أو خطة.", time: "20:45" }
+        ],
+        mathbo: [
+          { sender: "in", text: "هلا كافح، الأمور جاهزة وطيبة.", time: "20:30" }
+        ],
+        anwar: [
+          { sender: "in", text: "مرحباً كافح، متابع معك أول بأول.", time: "20:15" }
+        ]
+      },
+      callLogs: [
+        { id: "cl_1", name: "عقاب المخطوط", phone: "6431494949", direction: "outgoing", duration: "01:24", time: "20:40", missed: false, transcript: ["كافح: جاهز للانطلاق؟", "عقاب المخطوط: جاهزون بالكامل يا كافح، كل شيء تحت السيطرة."] }
+      ],
+      notes: [
+        { id: "n1", title: "خطة المحفظة والمتجر", body: "الرصيد الأساسي $999,000 — أي عملية شراء في المتجر تخصم مباشرة من المحفظة." }
+      ],
+      kick: {
+        channelName: "Drb7h",
+        followers: "2.0 مليون متابعين",
+        lastLive: "آخر بث مباشر منذ 21 ساعات",
+        subscribed: false,
+        liked: false,
+        notified: true,
+        activeTab: "الرئيسية",
+        vods: [
+          { title: "حياكم الله جميعا | RESPECT", category: "Just Chatting", duration: "05:15:29", views: "669 ألف", ago: "منذ 21 ساعات" },
+          { title: "سهرة الليل والقيادة الحرة", category: "Grand Theft Auto V", duration: "03:42:10", views: "690.6 ألف", ago: "منذ 3 أيام" }
+        ],
+        clips: [
+          { title: "اول كليب قُص من قبل griffth21", duration: "00:30", views: "703.7 ألف" },
+          { title: "لقطة المحكمة الأسطورية", duration: "00:45", views: "352.7 ألف" }
+        ]
+      },
+      aiVoiceEnabled: true,
+      ttsMuted: false
+    };
+  }
+
+  function loadState() {
+    const fallback = createDefaultState();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      const merged = Object.assign({}, fallback, parsed);
+      merged.inventory = Object.assign({}, fallback.inventory, parsed.inventory || {});
+      merged.chats = Object.assign({}, fallback.chats, parsed.chats || {});
+      merged.kick = Object.assign({}, fallback.kick, parsed.kick || {});
+      if (!Array.isArray(merged.contacts) || merged.contacts.length === 0) {
+        merged.contacts = JSON.parse(JSON.stringify(DEFAULT_CONTACTS));
+      } else {
+        const hasOwner = merged.contacts.some(c => c.phone === "7777777777" || c.isOwner);
+        if (!hasOwner) {
+          merged.contacts.unshift(DEFAULT_CONTACTS[0]);
+        }
+        const required = [
+          { phone: "6431494949", fallbackContact: DEFAULT_CONTACTS[1] },
+          { phone: "5849496731", fallbackContact: DEFAULT_CONTACTS[2] },
+          { phone: "6454424576", fallbackContact: DEFAULT_CONTACTS[3] }
+        ];
+        required.forEach(req => {
+          if (!merged.contacts.some(c => String(c.phone).trim() === req.phone)) {
+            merged.contacts.push(Object.assign({}, req.fallbackContact));
+          }
+        });
+      }
+      if (!Array.isArray(merged.galleryPhotos) || merged.galleryPhotos.length === 0) {
+        merged.galleryPhotos = DEFAULT_WALLPAPERS.map(w => ({ id: w.id, name: w.name, url: w.url }));
+      }
+      if (!Array.isArray(merged.callLogs)) merged.callLogs = fallback.callLogs;
+      if (!Array.isArray(merged.notes)) merged.notes = fallback.notes;
+      if (!Array.isArray(merged.transactions)) merged.transactions = fallback.transactions;
+      if (!merged.pinCode) merged.pinCode = "777";
+      return merged;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  let state = loadState();
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      showToast("تعذر حفظ البيانات محلياً");
+    }
+  }
+
+  function formatMoney(num) {
+    const val = Number(num) || 0;
+    return "$" + val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function nowHHMM() {
+    const d = new Date();
+    const h = String(d.getHours()).padStart(2, "0");
+    const m = String(d.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById("toastEl");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2400);
+  }
+
+  function applyWallpaper() {
+    const wpEl = document.getElementById("wallpaperEl");
+    if (state.customWallpaper) {
+      wpEl.style.backgroundImage = `url("${state.customWallpaper}")`;
+      return;
+    }
+    const found = DEFAULT_WALLPAPERS.find(w => w.id === state.selectedWallpaperId) || DEFAULT_WALLPAPERS[0];
+    wpEl.style.backgroundImage = `url("${found.url}")`;
+  }
+
+  function setCustomWallpaper(dataUrl, label = "خلفية مخصصة من كافح") {
+    state.customWallpaper = dataUrl;
+    state.selectedWallpaperId = "custom";
+    if (!state.galleryPhotos.some(p => p.url === dataUrl)) {
+      state.galleryPhotos.unshift({
+        id: "photo_" + Date.now(),
+        name: label,
+        url: dataUrl
+      });
+    }
+    saveState();
+    applyWallpaper();
+    showToast("تم تثبيت الخلفية بنجاح");
+  }
+
+  function syncTopAndWalletUI() {
+    const formatted = formatMoney(state.walletBalance);
+    document.getElementById("statusWallet").textContent = formatted;
+    const homeAmt = document.getElementById("homeWalletBalance");
+    if (homeAmt) homeAmt.textContent = formatted;
+    const clockStr = nowHHMM();
+    document.getElementById("statusClock").textContent = clockStr;
+    document.getElementById("lockClock").textContent = clockStr;
+    const missedCount = state.callLogs.filter(c => c.missed).length;
+    const badge = document.getElementById("missedBadge");
+    if (badge) {
+      badge.textContent = missedCount;
+      badge.style.display = missedCount > 0 ? "flex" : "none";
+    }
+  }
+
+  // Lock & Unlock
+  let enteredPin = "";
+  let bioScanning = false;
+
+  function renderPinDots() {
+    for (let i = 0; i < 3; i++) {
+      const dot = document.getElementById("dot" + i);
+      if (dot) dot.classList.toggle("filled", i < enteredPin.length);
+    }
+  }
+
+  function setPinMessage(msg, isOk = false) {
+    const el = document.getElementById("pinMsg");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.toggle("ok", !!isOk);
+  }
+
+  function unlockPhone(methodText = "تم فتح الهاتف") {
+    enteredPin = "";
+    renderPinDots();
+    setPinMessage("", false);
+    state.locked = false;
+    saveState();
+    applyWallpaper();
+    syncTopAndWalletUI();
+    document.getElementById("lockScreen").style.display = "none";
+    document.getElementById("homeScreen").style.display = "flex";
+    showToast(methodText);
+  }
+
+  function lockPhone() {
+    stopSpeech();
+    closeAllApps();
+    state.locked = true;
+    enteredPin = "";
+    renderPinDots();
+    setPinMessage("", false);
+    saveState();
+    applyWallpaper();
+    syncTopAndWalletUI();
+    document.getElementById("homeScreen").style.display = "none";
+    document.getElementById("lockScreen").style.display = "flex";
+  }
+
+  function handlePinDigit(d) {
+    if (!state.pinEnabled) {
+      unlockPhone("تم الفتح مباشرة (قفل الرمز معطل)");
+      return;
+    }
+    if (enteredPin.length >= 3) return;
+    enteredPin += String(d);
+    renderPinDots();
+    setPinMessage("", false);
+
+    if (enteredPin.length === 3) {
+      const expected = String(state.pinCode || "777");
+      if (enteredPin === expected) {
+        setPinMessage("رمز صحيح! جاري الفتح...", true);
+        setTimeout(() => unlockPhone("تم الفتح برمز المرور"), 180);
+      } else {
+        const box = document.getElementById("pinBox");
+        box.classList.remove("shake");
+        void box.offsetWidth;
+        box.classList.add("shake");
+        setPinMessage(`رمز غير صحيح (الرمز الصحيح هو ${expected})`, false);
+        setTimeout(() => {
+          enteredPin = "";
+          renderPinDots();
+        }, 350);
+      }
+    }
+  }
+
+  function triggerFingerprintUnlock() {
+    if (!state.fingerprintEnabled) {
+      showToast("فتح بالبصمة معطل من الإعدادات");
+      return;
+    }
+    if (bioScanning) return;
+    bioScanning = true;
+    const btn = document.getElementById("bioUnlockBtn");
+    const txt = document.getElementById("bioBtnText");
+    btn.classList.add("scanning");
+    txt.textContent = "جاري قراءة بصمة كافح...";
+    setTimeout(() => {
+      bioScanning = false;
+      btn.classList.remove("scanning");
+      txt.textContent = "فتح بالبصمة (بصمة كافح)";
+      unlockPhone("تم الفتح بالبصمة بنجاح");
+    }, 650);
+  }
+
+  // App Navigation
+  let activeAppId = null;
+
+  function openApp(appId) {
+    if (state.locked) {
+      showToast("افتح قفل الهاتف أولاً");
+      return;
+    }
+    document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active"));
+    const target = document.getElementById("app-" + appId);
+    if (!target) return;
+    target.classList.add("active");
+    activeAppId = appId;
+    renderApp(appId);
+  }
+
+  function closeAllApps() {
+    document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active"));
+    activeAppId = null;
+    syncTopAndWalletUI();
+  }
+
+  function renderApp(appId) {
+    syncTopAndWalletUI();
+    if (appId === "wallet") renderWallet();
+    else if (appId === "store") renderStore();
+    else if (appId === "inventory") renderInventory();
+    else if (appId === "whatsapp") renderWhatsApp();
+    else if (appId === "kick") renderKick();
+    else if (appId === "contacts") renderContacts();
+    else if (appId === "phone") renderPhone();
+    else if (appId === "photos") renderPhotos();
+    else if (appId === "notes") renderNotes();
+    else if (appId === "calc") renderCalc();
+    else if (appId === "settings") renderSettings();
+  }
+
+  // Purchase & Wallet Logic
+  function buyStoreItem(itemId) {
+    const item = STORE_ITEMS.find(i => i.id === itemId);
+    if (!item) return;
+    if (Number(state.walletBalance) < item.price) {
+      showToast("رصيد المحفظة غير كافٍ لإتمام الشراء");
+      return;
+    }
+    state.walletBalance = Number(state.walletBalance) - item.price;
+    state.inventory[item.id] = (Number(state.inventory[item.id]) || 0) + 1;
+    state.transactions.unshift({
+      id: "tx_" + Date.now(),
+      type: "purchase",
+      title: `شراء ${item.name}`,
+      amount: -item.price,
+      time: nowHHMM()
+    });
+    saveState();
+    syncTopAndWalletUI();
+    showToast(`تم شراء ${item.name} وخصم ${formatMoney(item.price)}`);
+    if (activeAppId === "store") renderStore();
+    if (activeAppId === "wallet") renderWallet();
+    if (activeAppId === "inventory") renderInventory();
+  }
+
+  function withdrawFromWallet(amount) {
+    const val = Number(amount);
+    if (!Number.isFinite(val) || val <= 0) {
+      showToast("أدخل مبلغاً صحيحاً للسحب");
+      return;
+    }
+    if (Number(state.walletBalance) < val) {
+      showToast("الرصيد المتبقي أقل من مبلغ السحب");
+      return;
+    }
+    state.walletBalance = Number(state.walletBalance) - val;
+    state.transactions.unshift({
+      id: "tx_" + Date.now(),
+      type: "withdraw",
+      title: "سحب نقدي من محفظة كافح",
+      amount: -val,
+      time: nowHHMM()
+    });
+    saveState();
+    syncTopAndWalletUI();
+    showToast(`تم سحب ${formatMoney(val)} من المحفظة`);
+    if (activeAppId === "wallet") renderWallet();
+  }
+
+  function depositToWallet(amount) {
+    const val = Number(amount);
+    if (!Number.isFinite(val) || val <= 0) return;
+    state.walletBalance = Number(state.walletBalance) + val;
+    state.transactions.unshift({
+      id: "tx_" + Date.now(),
+      type: "deposit",
+      title: "إيداع في محفظة كافح",
+      amount: val,
+      time: nowHHMM()
+    });
+    saveState();
+    syncTopAndWalletUI();
+    showToast(`تم إيداع ${formatMoney(val)} في المحفظة`);
+    if (activeAppId === "wallet") renderWallet();
+  }
+
+  function renderWallet() {
+    const body = document.getElementById("walletBody");
+    const txHtml = state.transactions.slice(0, 12).map(tx => {
+      const pos = Number(tx.amount) >= 0;
+      return `<div class="item-row">
+        <div>
+          <div style="font-size:13px;font-weight:700;">${tx.title}</div>
+          <div style="font-size:11px;color:var(--muted);">${tx.time}</div>
+        </div>
+        <div style="font-weight:800;direction:ltr;color:${pos ? "#4ade80" : "#fca5a5"};">
+          ${pos ? "+" : "-"}${formatMoney(Math.abs(Number(tx.amount)))}
+        </div>
+      </div>`;
+    }).join("");
+
+    body.innerHTML = `
+      <div class="card" style="text-align:center;border-color:rgba(245,158,11,0.4);">
+        <div style="font-size:12px;color:#fde68a;font-weight:700;">رصيد محفظة كافح المكافح الحالي</div>
+        <div style="font-size:28px;font-weight:900;margin:6px 0;direction:ltr;">${formatMoney(state.walletBalance)}</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+          <button type="button" class="btn" id="goStoreFromWallet">🛒 الذهاب للمتجر</button>
+          <button type="button" class="btn btn-green" id="quickDeposit10k">+ إيداع $10,000</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">سحب فلوس من المحفظة</div>
+        <div class="chips-row" style="margin-bottom:8px;">
+          <button type="button" class="chip" data-withdraw="500">$500</button>
+          <button type="button" class="chip" data-withdraw="1000">$1,000</button>
+          <button type="button" class="chip" data-withdraw="5000">$5,000</button>
+          <button type="button" class="chip" data-withdraw="25000">$25,000</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="number" class="input" id="customWithdrawInput" placeholder="مبلغ السحب بالدولار..." min="1" />
+          <button type="button" class="btn btn-gold" id="customWithdrawBtn">سحب</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">سجل العمليات</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">${txHtml || "<div style='color:var(--muted);font-size:12px;'>لا توجد عمليات بعد</div>"}</div>
+      </div>
+    `;
+
+    document.getElementById("goStoreFromWallet").onclick = () => openApp("store");
+    document.getElementById("quickDeposit10k").onclick = () => depositToWallet(10000);
+    body.querySelectorAll("[data-withdraw]").forEach(btn => {
+      btn.onclick = () => withdrawFromWallet(Number(btn.getAttribute("data-withdraw")));
+    });
+    document.getElementById("customWithdrawBtn").onclick = () => {
+      const v = Number(document.getElementById("customWithdrawInput").value);
+      withdrawFromWallet(v);
+    };
+  }
+
+  function renderStore() {
+    const body = document.getElementById("storeBody");
+    const cards = STORE_ITEMS.map(item => {
+      const owned = Number(state.inventory[item.id]) || 0;
+      const canAfford = Number(state.walletBalance) >= item.price;
+      return `<div class="card" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:24px;">${item.emoji}</div>
+            <div>
+              <div style="font-size:14px;font-weight:800;">${item.name}</div>
+              <div style="font-size:11px;color:var(--muted);">${item.desc}</div>
+            </div>
+          </div>
+          <span class="chip">في مقتنياتي: ${owned}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.07);">
+          <div style="font-size:15px;font-weight:900;color:#fbbf24;direction:ltr;">${formatMoney(item.price)}</div>
+          <button type="button" class="btn ${canAfford ? "btn-green" : "btn-ghost"}" data-buy-item="${item.id}">
+            ${canAfford ? "شراء الآن (خصم من المحفظة)" : "رصيد غير كافٍ"}
+          </button>
+        </div>
+      </div>`;
+    }).join("");
+
+    body.innerHTML = `
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;border-color:rgba(56,189,248,0.35);">
+        <div>
+          <div style="font-size:11px;color:#93c5fd;font-weight:700;">رصيدك المتاح الآن في المحفظة</div>
+          <div style="font-size:20px;font-weight:900;direction:ltr;">${formatMoney(state.walletBalance)}</div>
+        </div>
+        <button type="button" class="btn btn-ghost" id="storeOpenInvBtn">🎒 مقتنياتي</button>
+      </div>
+      ${cards}
+    `;
+
+    document.getElementById("storeOpenInvBtn").onclick = () => openApp("inventory");
+    body.querySelectorAll("[data-buy-item]").forEach(btn => {
+      btn.onclick = () => buyStoreItem(btn.getAttribute("data-buy-item"));
+    });
+  }
+
+  function renderInventory() {
+    const body = document.getElementById("inventoryBody");
+    const rows = STORE_ITEMS.map(item => {
+      const count = Number(state.inventory[item.id]) || 0;
+      return `<div class="item-row">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:24px;">${item.emoji}</span>
+          <div>
+            <div style="font-size:13px;font-weight:800;">${item.name}</div>
+            <div style="font-size:11px;color:var(--muted);">قيمة الوحدة: ${formatMoney(item.price)}</div>
+          </div>
+        </div>
+        <span class="chip" style="background:rgba(34,197,94,0.18);border-color:rgba(34,197,94,0.4);color:#86efac;">العدد: ${count}</span>
+      </div>`;
+    }).join("");
+
+    body.innerHTML = `
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">مقتنيات كافح المكافح</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">${rows}</div>
+      </div>
+    `;
+  }
+
+  // WhatsApp & AI Replies
+  let selectedChatId = "eqab";
+
+  function generateSmartReply(contactName, text, isCall = false) {
+    const clean = (text || "").trim();
+    if (contactName.includes("عقاب")) {
+      if (!clean) return "عقاب المخطوط معك على الخط يا كافح المكافح، أعطني توجيهك.";
+      if (clean.includes("فلوس") || clean.includes("محفظة") || clean.includes("شراء")) {
+        return `محفظتك يا كافح فيها ${formatMoney(state.walletBalance)}، والقرار قرارك في المتجر والسحب.`;
+      }
+      if (clean.includes("خطة") || clean.includes("هجوم") || clean.includes("جاهز")) {
+        return "الخطط جاهزة والميدان مضبوط يا كافح المكافح، نتحرك متى ما أمرت.";
+      }
+      return `سمعتك يا كافح بخصوص "${clean}"، عقاب المخطوط يأخذها بعين الاعتبار فوراً.`;
+    }
+    if (isCall) {
+      return `أهلاً يا كافح المكافح، أنا ${contactName} أسمعك بوضوح عبر المكالمة.`;
+    }
+    return `وصلت رسالتك يا كافح بخصوص "${clean || "تواصلك"}"، يعطيك العافية.`;
+  }
+
+  function renderWhatsApp() {
+    const body = document.getElementById("whatsappBody");
+    const chatContacts = state.contacts.filter(c => !c.isOwner);
+    if (!chatContacts.some(c => c.id === selectedChatId) && chatContacts.length) {
+      selectedChatId = chatContacts[0].id;
+    }
+    const activeContact = chatContacts.find(c => c.id === selectedChatId) || chatContacts[0];
+    if (!state.chats[activeContact.id]) state.chats[activeContact.id] = [];
+    const messages = state.chats[activeContact.id];
+
+    const selectorHtml = chatContacts.map(c => `
+      <button type="button" class="tab-pill ${c.id === activeContact.id ? "active" : ""}" data-wa-user="${c.id}">
+        ${c.name}
+      </button>
+    `).join("");
+
+    const msgsHtml = messages.map(m => `
+      <div class="msg ${m.sender === "out" ? "out" : "in"}">
+        <div>${m.text}</div>
+        <div class="msg-time">${m.time}</div>
+      </div>
+    `).join("");
+
+    body.innerHTML = `
+      <div class="tabs-bar">${selectorHtml}</div>
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar-circle" style="background:${activeContact.color};">${activeContact.name.slice(0, 1)}</div>
+          <div>
+            <div style="font-size:14px;font-weight:800;">${activeContact.name}</div>
+            <div style="font-size:11px;color:var(--muted);direction:ltr;text-align:right;">${activeContact.phone} • ${activeContact.role}</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-green" id="waCallBtn">📞 اتصال</button>
+      </div>
+      <div class="chat-box" id="waChatBox">${msgsHtml || "<div style='color:var(--muted);font-size:12px;text-align:center;margin:auto;'>ابدأ المراسلة الآن</div>"}</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" class="input" id="waMsgInput" placeholder="اكتب رسالة إلى ${activeContact.name}..." />
+        <button type="button" class="btn btn-green" id="waSendBtn">إرسال</button>
+      </div>
+    `;
+
+    const box = document.getElementById("waChatBox");
+    box.scrollTop = box.scrollHeight;
+
+    body.querySelectorAll("[data-wa-user]").forEach(btn => {
+      btn.onclick = () => {
+        selectedChatId = btn.getAttribute("data-wa-user");
+        renderWhatsApp();
+      };
+    });
+
+    document.getElementById("waCallBtn").onclick = () => {
+      startOutgoingCall(activeContact.name, activeContact.phone, activeContact.color);
+    };
+
+    function sendWa() {
+      const inp = document.getElementById("waMsgInput");
+      const text = inp.value.trim();
+      if (!text) return;
+      state.chats[activeContact.id].push({ sender: "out", text, time: nowHHMM() });
+      const reply = generateSmartReply(activeContact.name, text, false);
+      state.chats[activeContact.id].push({ sender: "in", text: reply, time: nowHHMM() });
+      saveState();
+      inp.value = "";
+      renderWhatsApp();
+      if (state.aiVoiceEnabled && !state.ttsMuted) {
+        speakArabic(reply);
+      }
+    }
+
+    document.getElementById("waSendBtn").onclick = sendWa;
+    document.getElementById("waMsgInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendWa();
+    });
+  }
+
+  // Kick App (Drb7h)
+  let kickModalItem = null;
+
+  function renderKick() {
+    const body = document.getElementById("kickBody");
+    const k = state.kick;
+    const tabs = ["الرئيسية", "حول", "مقاطع الفيديو", "مقاطع"];
+
+    const tabsHtml = tabs.map(t => `
+      <button type="button" class="tab-pill ${k.activeTab === t ? "active" : ""}" data-kick-tab="${t}">${t}</button>
+    `).join("");
+
+    const vodsHtml = k.vods.map((v, idx) => `
+      <div class="card" style="cursor:pointer;" data-kick-vod="${idx}">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--kick);font-weight:800;">
+          <span>${v.category}</span>
+          <span style="direction:ltr;">${v.duration}</span>
+        </div>
+        <div style="font-size:14px;font-weight:800;margin-top:6px;">${v.title}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">👁️ ${v.views} • ${v.ago}</div>
+      </div>
+    `).join("");
+
+    const clipsHtml = k.clips.map((c, idx) => `
+      <div class="item-row" style="cursor:pointer;" data-kick-clip="${idx}">
+        <div>
+          <div style="font-size:13px;font-weight:800;">${c.title}</div>
+          <div style="font-size:11px;color:var(--muted);">👁️ ${c.views} • مدة ${c.duration}</div>
+        </div>
+        <span class="chip" style="color:var(--kick);border-color:rgba(83,252,24,0.4);">▶ تشغيل</span>
+      </div>
+    `).join("");
+
+    let tabContent = "";
+    if (k.activeTab === "الرئيسية") {
+      tabContent = `
+        <div style="font-size:13px;font-weight:800;">فيديوهات البث</div>
+        ${vodsHtml}
+        <div style="font-size:13px;font-weight:800;margin-top:4px;">مقاطع شائعة</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">${clipsHtml}</div>
+      `;
+    } else if (k.activeTab === "حول") {
+      tabContent = `
+        <div class="card">
+          <div style="font-size:14px;font-weight:800;color:var(--kick);">حول قناة ${k.channelName}</div>
+          <p style="font-size:12px;color:#cbd5e1;line-height:1.6;margin:8px 0 0;">
+            قناة بث مباشر وتفاعل يومي مع الجمهور، مقاطع حصرية ولقطات مميزة ضمن منصة الكيك داخل هاتف كافح المكافح.
+          </p>
+          <div style="margin-top:8px;font-size:12px;color:var(--muted);">${k.followers} • ${k.lastLive}</div>
+        </div>
+      `;
+    } else if (k.activeTab === "مقاطع الفيديو") {
+      tabContent = `<div style="font-size:13px;font-weight:800;">جميع فيديوهات البث</div>${vodsHtml}`;
+    } else {
+      tabContent = `<div style="font-size:13px;font-weight:800;">جميع المقاطع الشائعة</div><div style="display:flex;flex-direction:column;gap:8px;">${clipsHtml}</div>`;
+    }
+
+    const modalHtml = kickModalItem ? `
+      <div class="card" style="border-color:var(--kick);background:rgba(9,17,28,0.98);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:800;color:var(--kick);">مشغل قناة ${k.channelName}</span>
+          <button type="button" class="back-btn" id="closeKickPlayerBtn">إغلاق</button>
+        </div>
+        <div style="margin-top:10px;padding:18px;border-radius:14px;background:linear-gradient(135deg,#064e3b,#090d16);text-align:center;">
+          <div style="font-size:28px;">🎬</div>
+          <div style="font-size:14px;font-weight:800;margin-top:6px;">${kickModalItem.title}</div>
+          <div style="font-size:12px;color:#a7f3d0;margin-top:4px;">المدة: ${kickModalItem.duration} • المشاهدات: ${kickModalItem.views}</div>
+        </div>
+      </div>
+    ` : "";
+
+    body.innerHTML = `
+      <div class="card" style="background:linear-gradient(135deg,#091612,#111827);border-color:rgba(83,252,24,0.35);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="avatar-circle" style="background:#064e3b;color:var(--kick);border-color:var(--kick);font-size:20px;">K</div>
+          <div>
+            <div style="font-size:16px;font-weight:900;">${k.channelName} <span style="color:var(--kick);">✔</span></div>
+            <div style="font-size:11px;color:#cbd5e1;">${k.lastLive} • ${k.followers}</div>
+            <div style="font-size:11px;color:#93c5fd;margin-top:2px;">x.com و 3 أكثر</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+          <button type="button" class="btn" id="kickSubBtn" style="flex:1;background:${k.subscribed ? "#1f2937" : "var(--kick)"};color:${k.subscribed ? "#fff" : "#051107"};">
+            ${k.subscribed ? "✓ مشترك في Drb7h" : "✦ اشترك"}
+          </button>
+          <button type="button" class="btn btn-ghost" id="kickLikeBtn">${k.liked ? "💚 معجب" : "🤍 إعجاب"}</button>
+          <button type="button" class="btn btn-ghost" id="kickBellBtn">${k.notified ? "🔔" : "🔕"}</button>
+        </div>
+      </div>
+      ${modalHtml}
+      <div class="tabs-bar">${tabsHtml}</div>
+      ${tabContent}
+    `;
+
+    document.getElementById("kickSubBtn").onclick = () => {
+      state.kick.subscribed = !state.kick.subscribed;
+      saveState();
+      renderKick();
+      showToast(state.kick.subscribed ? "تم الاشتراك في قناة Drb7h" : "تم إلغاء الاشتراك");
+    };
+    document.getElementById("kickLikeBtn").onclick = () => {
+      state.kick.liked = !state.kick.liked;
+      saveState();
+      renderKick();
+    };
+    document.getElementById("kickBellBtn").onclick = () => {
+      state.kick.notified = !state.kick.notified;
+      saveState();
+      renderKick();
+      showToast(state.kick.notified ? "تم تفعيل إشعارات البث" : "تم كتم إشعارات البث");
+    };
+    body.querySelectorAll("[data-kick-tab]").forEach(btn => {
+      btn.onclick = () => {
+        state.kick.activeTab = btn.getAttribute("data-kick-tab");
+        saveState();
+        renderKick();
+      };
+    });
+    body.querySelectorAll("[data-kick-vod]").forEach(el => {
+      el.onclick = () => {
+        kickModalItem = state.kick.vods[Number(el.getAttribute("data-kick-vod"))];
+        renderKick();
+      };
+    });
+    body.querySelectorAll("[data-kick-clip]").forEach(el => {
+      el.onclick = () => {
+        kickModalItem = state.kick.clips[Number(el.getAttribute("data-kick-clip"))];
+        renderKick();
+      };
+    });
+    const closePlayer = document.getElementById("closeKickPlayerBtn");
+    if (closePlayer) {
+      closePlayer.onclick = () => {
+        kickModalItem = null;
+        renderKick();
+      };
+    }
+  }
+
+  // Contacts App
+  function renderContacts() {
+    const body = document.getElementById("contactsBody");
+    const sorted = [...state.contacts].sort((a, b) => (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0));
+
+    const listHtml = sorted.map(c => `
+      <div class="card" style="border-color:${c.isOwner ? "rgba(245,158,11,0.5)" : "var(--border)"};">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar-circle" style="background:${c.color || "#334155"};">${(c.name || "?").slice(0, 1)}</div>
+            <div>
+              <div style="font-size:14px;font-weight:800;">${c.name} ${c.isOwner ? "<span class='chip' style='color:#fcd34d;border-color:rgba(245,158,11,0.45);'>رقمي</span>" : ""}</div>
+              <div style="font-size:12px;color:#93c5fd;direction:ltr;text-align:right;font-weight:700;">${c.phone}</div>
+              <div style="font-size:11px;color:var(--muted);">${c.role || "جهة اتصال"}</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button type="button" class="btn btn-green" style="flex:1;" data-call-contact="${c.id}">📞 اتصال</button>
+          <button type="button" class="btn" style="flex:1;background:#15803d;" data-wa-contact="${c.id}">💬 مراسلة واتساب</button>
+        </div>
+      </div>
+    `).join("");
+
+    body.innerHTML = `
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">إضافة جهة اتصال جديدة</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <input type="text" class="input" id="newContactName" placeholder="الاسم (مثال: أبو علي)" />
+          <input type="tel" class="input" id="newContactPhone" placeholder="رقم الهاتف (مثال: 7800000000)" />
+          <input type="text" class="input" id="newContactRole" placeholder="الوصف أو الدور (اختياري)" />
+          <button type="button" class="btn btn-green" id="addContactBtn">+ حفظ في جهات الاتصال</button>
+        </div>
+      </div>
+      ${listHtml}
+    `;
+
+    document.getElementById("addContactBtn").onclick = () => {
+      const name = document.getElementById("newContactName").value.trim();
+      const phone = document.getElementById("newContactPhone").value.trim();
+      const role = document.getElementById("newContactRole").value.trim() || "جهة اتصال";
+      if (!name || !phone) {
+        showToast("أدخل الاسم ورقم الهاتف أولاً");
+        return;
+      }
+      const colors = ["#0284c7", "#7c3aed", "#db2777", "#ea580c", "#0d9488"];
+      const color = colors[state.contacts.length % colors.length];
+      const id = "c_" + Date.now();
+      state.contacts.push({
+        id,
+        name,
+        phone,
+        role,
+        color,
+        isOwner: false,
+        aiPersona: `${name} يتحدث معك الآن يا كافح.`
+      });
+      if (!state.chats[id]) {
+        state.chats[id] = [{ sender: "in", text: `مرحباً يا كافح، أنا ${name}.`, time: nowHHMM() }];
+      }
+      saveState();
+      showToast(`تمت إضافة ${name} بنجاح`);
+      renderContacts();
+    };
+
+    body.querySelectorAll("[data-call-contact]").forEach(btn => {
+      btn.onclick = () => {
+        const c = state.contacts.find(x => x.id === btn.getAttribute("data-call-contact"));
+        if (c) startOutgoingCall(c.name, c.phone, c.color);
+      };
+    });
+
+    body.querySelectorAll("[data-wa-contact]").forEach(btn => {
+      btn.onclick = () => {
+        const c = state.contacts.find(x => x.id === btn.getAttribute("data-wa-contact"));
+        if (!c) return;
+        if (c.isOwner) {
+          showToast("هذا رقمك الشخصي (7777777777)");
+          return;
+        }
+        selectedChatId = c.id;
+        openApp("whatsapp");
+      };
+    });
+  }
+
+  // Phone & AI Voice Call System
+  let dialNumber = "";
+  let activeCall = null;
+  let callTimerInterval = null;
+  let speechRecognitionInstance = null;
+
+  function playSoftTone(freq = 520) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.09);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.09);
+      setTimeout(() => ctx.close(), 140);
+    } catch (e) {}
+  }
+
+  function stopSpeech() {
+    try {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (e) {}
+  }
+
+  function speakArabic(text, onEndCallback) {
+    if (!text) return;
+    if (state.ttsMuted || !state.aiVoiceEnabled) {
+      if (typeof onEndCallback === "function") onEndCallback();
+      return;
+    }
+    try {
+      if (!("speechSynthesis" in window)) {
+        if (typeof onEndCallback === "function") onEndCallback();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "ar-SA";
+      utter.rate = 1.0;
+      utter.pitch = 1.0;
+      const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+      const arVoice = voices.find(v => /ar/i.test(v.lang));
+      if (arVoice) utter.voice = arVoice;
+      utter.onstart = () => {
+        if (activeCall) {
+          activeCall.voiceStatus = "يتحدث الآن عبر الصوت...";
+          renderCallOverlay();
+        }
+      };
+      utter.onend = () => {
+        if (activeCall) {
+          activeCall.voiceStatus = "جاهز للكلام";
+          renderCallOverlay();
+        }
+        if (typeof onEndCallback === "function") onEndCallback();
+      };
+      utter.onerror = () => {
+        if (activeCall) {
+          activeCall.voiceStatus = "جاهز للكلام (عرض نصي)";
+          renderCallOverlay();
+        }
+        if (typeof onEndCallback === "function") onEndCallback();
+      };
+      window.speechSynthesis.speak(utter);
+    } catch (e) {
+      if (typeof onEndCallback === "function") onEndCallback();
+    }
+  }
+
+  function formatDuration(sec) {
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  function startOutgoingCall(name, phone, color = "#10b981") {
+    stopSpeech();
+    clearInterval(callTimerInterval);
+    const greeting = generateSmartReply(name, "", true);
+    activeCall = {
+      name,
+      phone,
+      color,
+      incoming: false,
+      seconds: 0,
+      muted: false,
+      speaker: true,
+      hold: false,
+      voiceStatus: "متصل • الذكاء الاصطناعي جاهز",
+      lastAiLine: greeting,
+      transcript: [`${name}: ${greeting}`]
+    };
+    renderCallOverlay();
+    document.getElementById("callOverlay").classList.add("active");
+    callTimerInterval = setInterval(() => {
+      if (!activeCall || activeCall.incoming || activeCall.hold) return;
+      activeCall.seconds += 1;
+      const tEl = document.getElementById("callTimerDisplay");
+      if (tEl) tEl.textContent = formatDuration(activeCall.seconds);
+    }, 1000);
+    speakArabic(greeting);
+  }
+
+  function startIncomingCall(name = "عقاب المخطوط", phone = "6431494949", color = "#dc2626") {
+    stopSpeech();
+    clearInterval(callTimerInterval);
+    activeCall = {
+      name,
+      phone,
+      color,
+      incoming: true,
+      seconds: 0,
+      muted: false,
+      speaker: true,
+      hold: false,
+      voiceStatus: "مكالمة واردة...",
+      lastAiLine: "",
+      transcript: []
+    };
+    renderCallOverlay();
+    document.getElementById("callOverlay").classList.add("active");
+  }
+
+  function endActiveCall(wasMissed = false) {
+    stopSpeech();
+    if (speechRecognitionInstance) {
+      try { speechRecognitionInstance.stop(); } catch (e) {}
+      speechRecognitionInstance = null;
+    }
+    clearInterval(callTimerInterval);
+    callTimerInterval = null;
+
+    if (activeCall) {
+      const durStr = wasMissed ? "00:00" : formatDuration(activeCall.seconds);
+      state.callLogs.unshift({
+        id: "cl_" + Date.now(),
+        name: activeCall.name,
+        phone: activeCall.phone,
+        direction: wasMissed ? "incoming" : (activeCall.incoming ? "incoming" : "outgoing"),
+        duration: durStr,
+        time: nowHHMM(),
+        missed: !!wasMissed,
+        transcript: activeCall.transcript.slice(-8)
+      });
+      saveState();
+    }
+    activeCall = null;
+    document.getElementById("callOverlay").classList.remove("active");
+    document.getElementById("callOverlay").innerHTML = "";
+    syncTopAndWalletUI();
+    if (activeAppId === "phone") renderPhone();
+  }
+
+  function sendVoicePromptDuringCall(userText) {
+    if (!activeCall) return;
+    const clean = (userText || "").trim();
+    if (!clean) return;
+    activeCall.transcript.push(`كافح: ${clean}`);
+    const aiReply = generateSmartReply(activeCall.name, clean, true);
+    activeCall.lastAiLine = aiReply;
+    activeCall.transcript.push(`${activeCall.name}: ${aiReply}`);
+    activeCall.voiceStatus = "يتحدث الآن عبر الصوت...";
+    renderCallOverlay();
+    speakArabic(aiReply);
+  }
+
+  function renderCallOverlay() {
+    const overlay = document.getElementById("callOverlay");
+    if (!activeCall) return;
+
+    if (activeCall.incoming) {
+      overlay.innerHTML = `
+        <div style="text-align:center;margin-top:28px;">
+          <div class="avatar-circle" style="width:76px;height:76px;font-size:32px;margin:0 auto 12px;background:${activeCall.color};">${activeCall.name.slice(0,1)}</div>
+          <div style="font-size:20px;font-weight:900;">${activeCall.name}</div>
+          <div style="font-size:13px;color:#93c5fd;direction:ltr;margin-top:4px;">${activeCall.phone}</div>
+          <div style="font-size:13px;color:#86efac;margin-top:8px;">مكالمة واردة على هاتف كافح</div>
+        </div>
+        <div style="display:flex;gap:14px;justify-content:center;margin-bottom:24px;">
+          <button type="button" class="btn btn-red" id="rejectCallBtn" style="padding:14px 22px;font-size:14px;">✖ رفض</button>
+          <button type="button" class="btn btn-green" id="acceptCallBtn" style="padding:14px 22px;font-size:14px;">📞 رد</button>
+        </div>
+      `;
+      document.getElementById("rejectCallBtn").onclick = () => endActiveCall(true);
+      document.getElementById("acceptCallBtn").onclick = () => {
+        activeCall.incoming = false;
+        const hello = `أهلاً يا كافح المكافح، ${activeCall.name} معك على الخط.`;
+        activeCall.lastAiLine = hello;
+        activeCall.transcript.push(`${activeCall.name}: ${hello}`);
+        renderCallOverlay();
+        callTimerInterval = setInterval(() => {
+          if (!activeCall || activeCall.hold) return;
+          activeCall.seconds += 1;
+          const tEl = document.getElementById("callTimerDisplay");
+          if (tEl) tEl.textContent = formatDuration(activeCall.seconds);
+        }, 1000);
+        speakArabic(hello);
+      };
+      return;
+    }
+
+    const transcriptHtml = activeCall.transcript.slice(-6).map(line =>
+      `<div style="font-size:12px;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,0.06);">${line}</div>`
+    ).join("");
+
+    overlay.innerHTML = `
+      <div>
+        <div style="text-align:center;">
+          <div class="avatar-circle" style="width:64px;height:64px;font-size:26px;margin:0 auto 8px;background:${activeCall.color};">${activeCall.name.slice(0,1)}</div>
+          <div style="font-size:18px;font-weight:900;">${activeCall.name}</div>
+          <div style="font-size:12px;color:#93c5fd;direction:ltr;">${activeCall.phone}</div>
+          <div id="callTimerDisplay" style="font-size:15px;font-weight:800;color:#4ade80;margin-top:4px;direction:ltr;">${formatDuration(activeCall.seconds)}</div>
+          <div style="font-size:11px;color:#fde68a;margin-top:4px;">${activeCall.voiceStatus}</div>
+        </div>
+
+        <div class="card" style="margin-top:10px;border-color:rgba(56,189,248,0.35);">
+          <div style="font-size:11px;color:#93c5fd;font-weight:800;margin-bottom:4px;">نص حديث الذكاء الاصطناعي المباشر</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;min-height:20px;">${activeCall.lastAiLine || "جاهز للتحدث معك..."}</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:8px;max-height:115px;overflow-y:auto;">${transcriptHtml}</div>
+        </div>
+
+        <div class="chips-row" style="margin-top:8px;">
+          <button type="button" class="chip" data-vp="شو الأخبار؟">شو الأخبار؟</button>
+          <button type="button" class="chip" data-vp="كم رصيد المحفظة؟">كم رصيد المحفظة؟</button>
+          <button type="button" class="chip" data-vp="نحن جاهزون للخطة">نحن جاهزون للخطة</button>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <input type="text" class="input" id="callPromptInput" placeholder="اكتب كلامك ليسمعه ويجيب بالصوت..." />
+          <button type="button" class="btn" id="callSendPromptBtn">إرسال</button>
+          <button type="button" class="btn btn-green" id="callMicBtn" title="تحدث بالميكروفون">🎙️</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
+          <button type="button" class="btn btn-ghost" id="toggleMuteCallBtn">${activeCall.muted ? "🔇 مكتوم" : "🎤 المايك"}</button>
+          <button type="button" class="btn btn-ghost" id="toggleSpeakerCallBtn">${activeCall.speaker ? "🔊 سبيكر" : "🔈 سماعة"}</button>
+          <button type="button" class="btn btn-ghost" id="toggleHoldCallBtn">${activeCall.hold ? "▶ استئناف" : "⏸ انتظار"}</button>
+          <button type="button" class="btn btn-ghost" id="replayVoiceBtn">🔁 إعادة النطق</button>
+          <button type="button" class="btn btn-ghost" id="toggleTtsMuteBtn">${state.ttsMuted ? "🔇 صوت الذكاء: مكتوم" : "🔊 صوت الذكاء: مفعل"}</button>
+          <button type="button" class="btn btn-ghost" id="toggleAiVoiceBtn">${state.aiVoiceEnabled ? "🤖 الذكاء: يعمل" : "🤖 الذكاء: متوقف"}</button>
+        </div>
+        <button type="button" class="btn btn-red" id="endCallBtn" style="width:100%;padding:12px;font-size:14px;">📵 إنهاء المكالمة</button>
+      </div>
+    `;
+
+    document.getElementById("endCallBtn").onclick = () => endActiveCall(false);
+    document.getElementById("toggleMuteCallBtn").onclick = () => {
+      activeCall.muted = !activeCall.muted;
+      renderCallOverlay();
+    };
+    document.getElementById("toggleSpeakerCallBtn").onclick = () => {
+      activeCall.speaker = !activeCall.speaker;
+      renderCallOverlay();
+    };
+    document.getElementById("toggleHoldCallBtn").onclick = () => {
+      activeCall.hold = !activeCall.hold;
+      renderCallOverlay();
+    };
+    document.getElementById("replayVoiceBtn").onclick = () => {
+      if (activeCall.lastAiLine) speakArabic(activeCall.lastAiLine);
+    };
+    document.getElementById("toggleTtsMuteBtn").onclick = () => {
+      state.ttsMuted = !state.ttsMuted;
+      if (state.ttsMuted) stopSpeech();
+      saveState();
+      renderCallOverlay();
+    };
+    document.getElementById("toggleAiVoiceBtn").onclick = () => {
+      state.aiVoiceEnabled = !state.aiVoiceEnabled;
+      if (!state.aiVoiceEnabled) stopSpeech();
+      saveState();
+      renderCallOverlay();
+    };
+
+    overlay.querySelectorAll("[data-vp]").forEach(chip => {
+      chip.onclick = () => sendVoicePromptDuringCall(chip.getAttribute("data-vp"));
+    });
+
+    const sendBtn = document.getElementById("callSendPromptBtn");
+    const promptInp = document.getElementById("callPromptInput");
+    sendBtn.onclick = () => {
+      const val = promptInp.value.trim();
+      if (!val) return;
+      promptInp.value = "";
+      sendVoicePromptDuringCall(val);
+    };
+    promptInp.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        const val = promptInp.value.trim();
+        if (!val) return;
+        promptInp.value = "";
+        sendVoicePromptDuringCall(val);
+      }
+    });
+
+    document.getElementById("callMicBtn").onclick = () => {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        showToast("الميكروفون الصوتي غير مدعوم هنا، اكتب رسالتك وأرسلها");
+        return;
+      }
+      try {
+        const rec = new SR();
+        speechRecognitionInstance = rec;
+        rec.lang = "ar-SA";
+        rec.interimResults = false;
+        activeCall.voiceStatus = "يستمع لك الآن...";
+        renderCallOverlay();
+        rec.onresult = event => {
+          const spoken = event.results[0][0].transcript;
+          sendVoicePromptDuringCall(spoken);
+        };
+        rec.onerror = () => {
+          if (activeCall) {
+            activeCall.voiceStatus = "لم يُلتقط صوت، يمكنك الكتابة هنا";
+            renderCallOverlay();
+          }
+        };
+        rec.onend = () => {
+          speechRecognitionInstance = null;
+        };
+        rec.start();
+      } catch (e) {
+        showToast("تعذر تشغيل الميكروفون");
+      }
+    };
+  }
+
+  function renderPhone() {
+    const body = document.getElementById("phoneBody");
+    const quickContacts = state.contacts.map(c => `
+      <button type="button" class="chip" data-dial-contact="${c.id}">📞 ${c.name}</button>
+    `).join("");
+
+    const logsHtml = state.callLogs.slice(0, 10).map(log => `
+      <div class="item-row">
+        <div>
+          <div style="font-size:13px;font-weight:800;">${log.name} ${log.missed ? "<span style='color:#fca5a5;font-size:11px;'>(فائتة)</span>" : ""}</div>
+          <div style="font-size:11px;color:var(--muted);direction:ltr;text-align:right;">${log.phone} • ${log.duration} • ${log.time}</div>
+        </div>
+        <button type="button" class="btn btn-green" data-redial-phone="${log.phone}" data-redial-name="${log.name}">اتصال</button>
+      </div>
+    `).join("");
+
+    body.innerHTML = `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:12px;color:var(--muted);">لوحة الاتصال السريع</span>
+          <button type="button" class="btn btn-ghost" id="simIncomingBtn">📲 محاكاة مكالمة واردة</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="tel" class="input" id="dialDisplayInput" value="${dialNumber}" placeholder="أدخل الرقم..." style="font-size:18px;font-weight:900;letter-spacing:1px;direction:ltr;text-align:center;" />
+          <button type="button" class="btn btn-ghost" id="dialBackspaceBtn">⌫</button>
+        </div>
+        <div class="dialpad-grid">
+          ${["1","2","3","4","5","6","7","8","9","*","0","#"].map(d => `<button type="button" class="dial-btn" data-dial-key="${d}">${d}</button>`).join("")}
+        </div>
+        <button type="button" class="btn btn-green" id="dialCallBtn" style="width:100%;margin-top:10px;padding:11px;font-size:14px;">📞 اتصال الآن</button>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:800;margin-bottom:8px;">اتصال سريع بجهات الاتصال</div>
+        <div class="chips-row">${quickContacts}</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">سجل المكالمات</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">${logsHtml}</div>
+      </div>
+    `;
+
+    const disp = document.getElementById("dialDisplayInput");
+    disp.oninput = () => { dialNumber = disp.value; };
+
+    body.querySelectorAll("[data-dial-key]").forEach(btn => {
+      btn.onclick = () => {
+        const k = btn.getAttribute("data-dial-key");
+        dialNumber += k;
+        disp.value = dialNumber;
+        playSoftTone(480 + (Number(k) || 2) * 35);
+      };
+    });
+
+    document.getElementById("dialBackspaceBtn").onclick = () => {
+      dialNumber = dialNumber.slice(0, -1);
+      disp.value = dialNumber;
+    };
+
+    document.getElementById("dialCallBtn").onclick = () => {
+      const targetNum = (disp.value || dialNumber || "").trim();
+      if (!targetNum) {
+        showToast("أدخل رقماً للاتصال");
+        return;
+      }
+      const matched = state.contacts.find(c => String(c.phone).trim() === targetNum);
+      if (matched) {
+        startOutgoingCall(matched.name, matched.phone, matched.color);
+      } else {
+        startOutgoingCall("رقم " + targetNum, targetNum, "#0284c7");
+      }
+    };
+
+    document.getElementById("simIncomingBtn").onclick = () => {
+      const eqab = state.contacts.find(c => c.id === "eqab") || DEFAULT_CONTACTS[1];
+      startIncomingCall(eqab.name, eqab.phone, eqab.color);
+    };
+
+    body.querySelectorAll("[data-dial-contact]").forEach(btn => {
+      btn.onclick = () => {
+        const c = state.contacts.find(x => x.id === btn.getAttribute("data-dial-contact"));
+        if (c) startOutgoingCall(c.name, c.phone, c.color);
+      };
+    });
+
+    body.querySelectorAll("[data-redial-phone]").forEach(btn => {
+      btn.onclick = () => {
+        const ph = btn.getAttribute("data-redial-phone");
+        const nm = btn.getAttribute("data-redial-name");
+        const c = state.contacts.find(x => String(x.phone) === ph);
+        startOutgoingCall(nm, ph, c ? c.color : "#10b981");
+      };
+    });
+  }
+
+  // Photos & Wallpapers
+  function renderPhotos() {
+    const body = document.getElementById("photosBody");
+    const itemsHtml = state.galleryPhotos.map(p => `
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:52px;height:52px;border-radius:12px;background-image:url('${p.url}');background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.2);"></div>
+          <div style="font-size:13px;font-weight:800;">${p.name}</div>
+        </div>
+        <button type="button" class="btn btn-green" data-set-wp="${p.id}">تعيين كخلفية</button>
+      </div>
+    `).join("");
+
+    body.innerHTML = `
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:6px;">رفع صورة جديدة وتثبيتها كخلفية</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">الخلفية المختارة تبقى مثبتة عند القفل وإعادة الفتح.</div>
+        <input type="file" id="wpFileInput" accept="image/*" class="input" />
+      </div>
+      ${itemsHtml}
+    `;
+
+    document.getElementById("wpFileInput").onchange = e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        setCustomWallpaper(ev.target.result, file.name);
+        renderPhotos();
+      };
+      reader.readAsDataURL(file);
+    };
+
+    body.querySelectorAll("[data-set-wp]").forEach(btn => {
+      btn.onclick = () => {
+        const pid = btn.getAttribute("data-set-wp");
+        const found = state.galleryPhotos.find(x => x.id === pid);
+        if (!found) return;
+        state.customWallpaper = found.url;
+        state.selectedWallpaperId = found.id;
+        saveState();
+        applyWallpaper();
+        showToast("تم تثبيت الخلفية بنجاح");
+      };
+    });
+  }
+
+  // Notes
+  function renderNotes() {
+    const body = document.getElementById("notesBody");
+    const notesHtml = state.notes.map(n => `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:14px;font-weight:800;">${n.title}</div>
+          <button type="button" class="btn btn-red" style="padding:5px 9px;" data-del-note="${n.id}">حذف</button>
+        </div>
+        <div style="font-size:12px;color:#cbd5e1;margin-top:6px;white-space:pre-line;">${n.body}</div>
+      </div>
+    `).join("");
+
+    body.innerHTML = `
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">إضافة ملاحظة جديدة</div>
+        <input type="text" class="input" id="noteTitleInp" placeholder="عنوان الملاحظة" style="margin-bottom:8px;" />
+        <textarea class="textarea" id="noteBodyInp" rows="3" placeholder="اكتب ملاحظتك هنا..."></textarea>
+        <button type="button" class="btn btn-green" id="addNoteBtn" style="margin-top:8px;width:100%;">حفظ الملاحظة</button>
+      </div>
+      ${notesHtml}
+    `;
+
+    document.getElementById("addNoteBtn").onclick = () => {
+      const t = document.getElementById("noteTitleInp").value.trim() || "ملاحظة كافح";
+      const b = document.getElementById("noteBodyInp").value.trim();
+      if (!b) {
+        showToast("اكتب نص الملاحظة أولاً");
+        return;
+      }
+      state.notes.unshift({ id: "n_" + Date.now(), title: t, body: b });
+      saveState();
+      renderNotes();
+      showToast("تم حفظ الملاحظة");
+    };
+
+    body.querySelectorAll("[data-del-note]").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-del-note");
+        state.notes = state.notes.filter(x => x.id !== id);
+        saveState();
+        renderNotes();
+      };
+    });
+  }
+
+  // Calculator
+  let calcExpr = "";
+  function renderCalc() {
+    const body = document.getElementById("calcBody");
+    const keys = ["7","8","9","/","4","5","6","*","1","2","3","-","0",".","C","+"];
+    body.innerHTML = `
+      <div class="card">
+        <div id="calcScreen" style="padding:14px;border-radius:12px;background:#060a12;font-size:24px;font-weight:900;text-align:left;direction:ltr;min-height:56px;overflow-x:auto;">${calcExpr || "0"}</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;">
+          ${keys.map(k => `<button type="button" class="dial-btn" data-calc-k="${k}">${k}</button>`).join("")}
+        </div>
+        <button type="button" class="btn btn-green" id="calcEqBtn" style="width:100%;margin-top:10px;padding:12px;font-size:15px;">=</button>
+      </div>
+    `;
+
+    body.querySelectorAll("[data-calc-k]").forEach(btn => {
+      btn.onclick = () => {
+        const k = btn.getAttribute("data-calc-k");
+        if (k === "C") calcExpr = "";
+        else calcExpr += k;
+        document.getElementById("calcScreen").textContent = calcExpr || "0";
+      };
+    });
+
+    document.getElementById("calcEqBtn").onclick = () => {
+      try {
+        if (!calcExpr) return;
+        const safe = calcExpr.replace(/[^0-9+\-*/.()]/g, "");
+        const res = Function('"use strict";return (' + safe + ')')();
+        calcExpr = String(res);
+        document.getElementById("calcScreen").textContent = calcExpr;
+      } catch (e) {
+        calcExpr = "";
+        document.getElementById("calcScreen").textContent = "خطأ";
+      }
+    };
+  }
+
+  // Settings
+  function renderSettings() {
+    const body = document.getElementById("settingsBody");
+    body.innerHTML = `
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">أمان شاشة القفل (الرمز الافتراضي: 777)</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+            <span>تفعيل رمز المرور (777)</span>
+            <input type="checkbox" id="setPinEnabled" ${state.pinEnabled ? "checked" : ""} />
+          </label>
+          <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+            <span>تفعيل الفتح بالبصمة</span>
+            <input type="checkbox" id="setBioEnabled" ${state.fingerprintEnabled ? "checked" : ""} />
+          </label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <input type="text" class="input" id="setPinCodeInp" value="${state.pinCode}" maxlength="6" placeholder="رمز القفل" />
+            <button type="button" class="btn" id="savePinBtn">حفظ الرمز</button>
+          </div>
+          <button type="button" class="btn btn-gold" id="lockNowFromSettings">🔒 قفل الهاتف الآن</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px;">صوت الذكاء الاصطناعي في المكالمات والرسائل</div>
+        <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:6px;">
+          <span>تشغيل ردود الذكاء الاصطناعي</span>
+          <input type="checkbox" id="setAiVoice" ${state.aiVoiceEnabled ? "checked" : ""} />
+        </label>
+        <label style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+          <span>كتم النطق الصوتي (TTS)</span>
+          <input type="checkbox" id="setTtsMuted" ${state.ttsMuted ? "checked" : ""} />
+        </label>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:800;margin-bottom:6px;">إدارة بيانات الهاتف</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">المالك: كافح المكافح • الرقم: 7777777777</div>
+        <button type="button" class="btn btn-red" id="resetPhoneBtn" style="width:100%;">إعادة ضبط الهاتف إلى القيم الافتراضية</button>
+      </div>
+    `;
+
+    document.getElementById("setPinEnabled").onchange = e => {
+      state.pinEnabled = e.target.checked;
+      saveState();
+      showToast(state.pinEnabled ? "تم تفعيل رمز القفل" : "تم تعطيل رمز القفل");
+    };
+    document.getElementById("setBioEnabled").onchange = e => {
+      state.fingerprintEnabled = e.target.checked;
+      saveState();
+      showToast(state.fingerprintEnabled ? "تم تفعيل البصمة" : "تم تعطيل البصمة");
+    };
+    document.getElementById("savePinBtn").onclick = () => {
+      const val = document.getElementById("setPinCodeInp").value.trim();
+      if (!val) {
+        showToast("أدخل رمزاً صالحاً");
+        return;
+      }
+      state.pinCode = val;
+      saveState();
+      showToast(`تم حفظ رمز القفل الجديد: ${val}`);
+    };
+    document.getElementById("lockNowFromSettings").onclick = () => lockPhone();
+
+    document.getElementById("setAiVoice").onchange = e => {
+      state.aiVoiceEnabled = e.target.checked;
+      saveState();
+    };
+    document.getElementById("setTtsMuted").onchange = e => {
+      state.ttsMuted = e.target.checked;
+      if (state.ttsMuted) stopSpeech();
+      saveState();
+    };
+
+    document.getElementById("resetPhoneBtn").onclick = () => {
+      stopSpeech();
+      localStorage.removeItem(STORAGE_KEY);
+      state = createDefaultState();
+      saveState();
+      applyWallpaper();
+      syncTopAndWalletUI();
+      showToast("تمت إعادة الضبط بنجاح");
+      renderSettings();
+    };
+  }
+
+  // Bind Global Events
+  document.getElementById("lockKeypad").addEventListener("click", e => {
+    const btn = e.target.closest("[data-pin]");
+    if (!btn) return;
+    handlePinDigit(btn.getAttribute("data-pin"));
+  });
+  document.getElementById("pinClearBtn").onclick = () => {
+    enteredPin = "";
+    renderPinDots();
+    setPinMessage("", false);
+  };
+  document.getElementById("pinBackBtn").onclick = () => {
+    enteredPin = enteredPin.slice(0, -1);
+    renderPinDots();
+    setPinMessage("", false);
+  };
+  document.getElementById("bioUnlockBtn").onclick = triggerFingerprintUnlock;
+
+  document.getElementById("homeWalletBanner").onclick = () => openApp("wallet");
+
+  document.querySelectorAll("[data-open-app]").forEach(el => {
+    el.addEventListener("click", () => openApp(el.getAttribute("data-open-app")));
+  });
+
+  document.querySelectorAll("[data-close-app]").forEach(btn => {
+    btn.addEventListener("click", closeAllApps);
+  });
+
+  document.getElementById("navHomeBtn").onclick = closeAllApps;
+  document.getElementById("navBackBtn").onclick = () => {
+    if (activeCall) {
+      endActiveCall(false);
+    } else if (activeAppId) {
+      closeAllApps();
+    }
+  };
+  document.getElementById("navLockBtn").onclick = lockPhone;
+
+  // Initial Render
+  applyWallpaper();
+  syncTopAndWalletUI();
+  renderPinDots();
+  if (!state.locked) {
+    document.getElementById("lockScreen").style.display = "none";
+    document.getElementById("homeScreen").style.display = "flex";
+  }
+})();
+</script>
+</body>
+</html>
